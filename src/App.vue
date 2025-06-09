@@ -1,26 +1,18 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link :to="{ name: 'main' }">Vue Recipes</router-link> |
-      <router-link :to="{ name: 'search' }">Search</router-link> |
-      <span v-if="!store.username">
-        Guest:
-        <router-link :to="{ name: 'register' }">Register</router-link> |
-        <router-link :to="{ name: 'login' }">Login</router-link> |
-      </span>
-      <span v-else>
-        {{ store.username }}:
-        <button @click="logout" class="btn btn-link p-0">Logout</button> |
-      </span>
-    </div>
-    <router-view />
+  <div>
+    <Navbar />
+    <main class="container mt-4">
+      <router-view />
+    </main>
   </div>
 </template>
 
 <script>
 import { getCurrentInstance } from 'vue';
+import Navbar from './components/Navbar.vue';
 
 export default {
+  components: { Navbar },
   name: "App",
   setup() {
     const internalInstance = getCurrentInstance();
@@ -42,6 +34,12 @@ export default {
 <style lang="scss">
 @import "@/scss/form-style.scss";
 
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #e6f4ea !important;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -61,5 +59,10 @@ export default {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+/* Remove background color from individual pages since it's now global */
+.auth-container, .about-container {
+  background-color: transparent;
 }
 </style>

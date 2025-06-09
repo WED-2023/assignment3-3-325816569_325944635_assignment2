@@ -20,6 +20,7 @@ const app = createApp(App);
 app.use(router);
 app.use(VueAxios, axios);
 
+app.provide('store', store); // provide store for inject()
 app.config.globalProperties.store = store;
 
 app.config.globalProperties.toast = function (title, content, variant = null, append = false) {

@@ -2,6 +2,12 @@
   <div class="container">
     <h1 class="title">Main Page</h1>
 
+    <div class="text-center">
+      <h1 class="display-4 mb-3">Welcome to RecipeApp</h1>
+      <p class="lead mb-4">Discover, search and save your favorite recipes!</p>
+      <router-link to="/search" class="btn btn-lg btn-success">Start Searching</router-link>
+    </div>
+
     <RecipePreviewList title="Random Recipes" class="RandomRecipes center" />
 
     <div v-if="!store.username" class="text-center mt-4">
