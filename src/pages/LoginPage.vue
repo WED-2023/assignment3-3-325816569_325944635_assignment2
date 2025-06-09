@@ -29,13 +29,14 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import AuthCard from '../components/AuthCard.vue';
 
 const store = inject('store');
 const router = useRouter();
+const app = getCurrentInstance();
 
 const username = ref('');
 const password = ref('');
@@ -55,7 +56,7 @@ async function onLogin() {
       password: password.value
     });
     store.login(username.value);
-    store.toast("Login Successful", `Welcome, ${username.value}!`, "success");
+    app.appContext.config.globalProperties.toast("Login Successful", `Welcome, ${username.value}!`, "success");
     router.push("/");
   } catch (e) {
     error.value = e.response?.data?.message || "Login failed.";

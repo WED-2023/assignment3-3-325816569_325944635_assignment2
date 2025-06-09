@@ -63,13 +63,14 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import AuthCard from '../components/AuthCard.vue';
 
 const store = inject('store');
 const router = useRouter();
+const app = getCurrentInstance();
 
 const username = ref('');
 const firstname = ref('');
@@ -162,7 +163,8 @@ async function onRegister() {
     console.log("Registration response:", response);
     
     if (response.status === 201 || response.status === 200) {
-      store.toast("Registration Successful", "You can now login.", "success");
+      // Use the global toast function
+      app.appContext.config.globalProperties.toast("Registration Successful", "You can now login.", "success");
       router.push("/login");
     } else {
       throw new Error(response.data?.message || 'Registration failed');

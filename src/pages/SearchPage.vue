@@ -118,12 +118,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { CUISINES, DIETS, INTOLERANCES } from '../utils/recipeConstants';
 
 const router = useRouter();
+const store = inject('store');
 const searchQuery = ref(localStorage.getItem('lastSearch') || '');
 const resultsCount = ref(5);
 const loading = ref(false);
@@ -162,7 +163,8 @@ async function performSearch() {
   try {
     localStorage.setItem('lastSearch', searchQuery.value);
     
-    const response = await axios.get('/api/recipes/search', {
+    // Use GET with query parameters instead of POST with body
+    const response = await axios.get(`${store.server_domain}/recipes/search`, {
       params: {
         query: searchQuery.value,
         number: resultsCount.value,
@@ -174,7 +176,10 @@ async function performSearch() {
       }
     });
     
-    recipes.value = response.data.results;
+    console.log('Search response:', response.data);
+    
+    // Handle the response data correctly
+    recipes.value = Array.isArray(response.data) ? response.data : [];
   } catch (e) {
     error.value = 'Failed to fetch recipes. Please try again.';
     console.error('Search error:', e);
