@@ -1,14 +1,17 @@
 <template>
   <b-container>
-    <h3>
-      {{ title }}:
+    <h3 class="title-section">
+      <strong>{{ title }}:</strong>
       <slot></slot>
     </h3>
-    <b-row>
-      <b-col v-for="r in recipes" :key="r.id">
-        <RecipePreview class="recipePreview" :recipe="r" />
-      </b-col>
-    </b-row>
+    <div class="recipes-container">
+      <RecipePreview
+        v-for="r in recipes"
+        :key="r.id"
+        class="recipe-item"
+        :recipe="r"
+      />
+    </div>
   </b-container>
 </template>
 
@@ -47,19 +50,20 @@ export default {
           }
         );
 
-        console.log("response: ", response);
         const recipes = response.data.recipes.map((r) => {
           return {
             id: r.id,
             title: r.title,
             readyInMinutes: r.readyInMinutes,
             image: r.image,
-            aggregateLikes: r.aggregateLikes
+            popularity: r.aggregateLikes, // This will be combined with DB likes on backend
+            vegan: r.vegan,
+            vegetarian: r.vegetarian,
+            glutenFree: r.glutenFree
           };
         });
         this.recipes = [];
         this.recipes.push(...recipes);
-        console.log("recipes:  " , this.recipes);
       } catch (error) {
         console.log(error);
       }
@@ -69,7 +73,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.title-section {
+  text-align: center;
+  margin: 2rem 0 3rem;
+  font-weight: bold;
+  font-size: 1.8rem;
+}
+
 .container {
-  min-height: 400px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.recipes-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.recipe-item {
+  flex: 0 0 calc(33.333% - 14px);
 }
 </style>
