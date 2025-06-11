@@ -4,7 +4,18 @@
       <strong>{{ title }}:</strong>
       <slot></slot>
     </h3>
-    <div class="recipes-container">
+    <div v-if="loading" class="text-center py-4">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div v-else-if="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+    <div v-else-if="recipes.length === 0" class="alert alert-info text-center">
+      {{ emptyMessage }}
+    </div>
+    <div v-else class="recipes-container">
       <RecipePreview
         v-for="r in recipes"
         :key="r.id"
@@ -26,11 +37,21 @@ export default {
     title: {
       type: String,
       required: true
+    },
+    source: {
+      type: String,
+      default: "random", // 'random', 'viewed', 'favorites', etc.
+    },
+    emptyMessage: {
+      type: String,
+      default: "No recipes to display."
     }
   },
   data() {
     return {
-      recipes: []
+      recipes: [],
+      loading: true,
+      error: null
     };
   },
   mounted() {
@@ -38,34 +59,41 @@ export default {
   },
   methods: {
     async updateRecipes() {
+      this.loading = true;
+      this.error = null;
+      
       try {
-        const response = await this.axios.get(
-          "https://api.spoonacular.com/recipes/random",
-          {
-            params: {
-              limitLicense: true,
-              number: 3,
-              apiKey: 'b7b147413c244375812ccb826d79cdcc'
-            }
-          }
-        );
-
-        const recipes = response.data.recipes.map((r) => {
-          return {
-            id: r.id,
-            title: r.title,
-            readyInMinutes: r.readyInMinutes,
-            image: r.image,
-            popularity: r.aggregateLikes, // This will be combined with DB likes on backend
-            vegan: r.vegan,
-            vegetarian: r.vegetarian,
-            glutenFree: r.glutenFree
-          };
-        });
+        let endpoint;
+        switch (this.source) {
+          case "viewed":
+            endpoint = `${this.$root.store.server_domain}/users/viewed-recipes`;
+            break;
+          case "favorites":
+            endpoint = `${this.$root.store.server_domain}/users/favorites`;
+            break;
+          case "random":
+          default:
+            endpoint = `${this.$root.store.server_domain}/recipes/random`;
+        }
+        
+        const response = await this.axios.get(endpoint, { withCredentials: true });
+        console.log(`${this.source} recipes response:`, response.data);
+        
         this.recipes = [];
-        this.recipes.push(...recipes);
+        
+        if (response.data && Array.isArray(response.data)) {
+          this.recipes.push(...response.data);
+        }
       } catch (error) {
-        console.log(error);
+        console.error(`Error fetching ${this.source} recipes:`, error);
+        if (error.response?.status === 401 && this.source !== "random") {
+          // For non-random sources that require authentication
+          this.error = "Please log in to view this content.";
+        } else {
+          this.error = `Failed to load recipes. ${error.message}`;
+        }
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -88,7 +116,6 @@ export default {
 
 .recipes-container {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
   margin: 0 auto;

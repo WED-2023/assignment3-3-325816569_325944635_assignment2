@@ -5,7 +5,12 @@
     <div class="row">
       <!-- Left Column -->
       <div class="col-md-6 left-column">
-        <RecipePreviewList title="Explore these recipes" class="random-recipes" ref="randomRecipes" />
+        <RecipePreviewList 
+          title="Explore these recipes" 
+          class="random-recipes" 
+          source="random"
+          ref="randomRecipes" 
+        />
         <div class="text-center mt-4">
           <button @click="refreshRandomRecipes" class="btn btn-primary">
             <i class="fas fa-sync-alt"></i> Get New Recipes
@@ -19,6 +24,8 @@
           <RecipePreviewList
             title="Last watched recipes"
             class="last-viewed-recipes"
+            source="viewed"
+            emptyMessage="You haven't viewed any recipes yet. Explore our recipes to get started!"
           />
         </template>
         <template v-else>

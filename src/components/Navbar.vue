@@ -91,9 +91,14 @@
 
 <script setup>
 import { inject } from 'vue';
+import { useRouter } from 'vue-router';
+
 const store = inject('store') || window.store;
+const router = useRouter();
+
 function logout() {
   store.logout();
+  router.push('/'); // Redirect to main page after logout
 }
 </script>
 
