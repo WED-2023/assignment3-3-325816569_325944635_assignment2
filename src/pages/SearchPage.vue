@@ -118,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted, inject, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { CUISINES, DIETS, INTOLERANCES } from '../utils/recipeConstants';
@@ -196,6 +196,20 @@ onMounted(() => {
   if (searchQuery.value) {
     performSearch();
   }
+});
+
+// Clear search state when leaving the page
+onBeforeUnmount(() => {
+  searchQuery.value = '';
+  resultsCount.value = 5;
+  recipes.value = [];
+  error.value = '';
+  searched.value = false;
+  sortBy.value = 'time';
+  filters.value.cuisine = '';
+  filters.value.diet = '';
+  filters.value.intolerance = '';
+  localStorage.removeItem('lastSearch');
 });
 </script>
 

@@ -2,10 +2,15 @@
   <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="mb-0">My Recipes</h1>
-      <router-link to="/create-recipe" class="btn btn-success">
+      <button class="btn btn-success" @click="showCreateModal = true">
         <i class="fas fa-plus me-2"></i>Create New Recipe
-      </router-link>
+      </button>
     </div>
+
+    <CreateRecipePage
+      v-model:visible="showCreateModal"
+      @created="onRecipeCreated"
+    />
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-5">
@@ -26,9 +31,9 @@
       <i class="fas fa-book fa-3x mb-3 text-muted"></i>
       <h3>You haven't created any recipes yet</h3>
       <p class="text-muted mb-4">Start adding your own culinary creations to share with others!</p>
-      <router-link to="/create-recipe" class="btn btn-primary">
+      <button class="btn btn-primary" @click="showCreateModal = true">
         Create Your First Recipe
-      </router-link>
+      </button>
     </div>
 
     <!-- Recipes Grid -->
@@ -71,15 +76,18 @@
 
 <script>
 import axios from 'axios';
+import CreateRecipePage from './CreateRecipePage.vue';
 
 export default {
   name: 'MyRecipesPage',
+  components: { CreateRecipePage },
   data() {
     return {
       recipes: [],
       loading: true,
       error: null,
-      store: this.$root.store
+      store: this.$root.store,
+      showCreateModal: false
     };
   },
   created() {
@@ -126,6 +134,14 @@ export default {
       // Use the id in a console.log to satisfy ESLint
       console.log(`Delete recipe with ID: ${id} - Feature coming soon`);
       this.$root.toast('Info', 'Delete feature coming soon!', 'info');
+    },
+    onRecipeCreated(newRecipeId) {
+      this.showCreateModal = false;
+      this.fetchMyRecipes();
+      this.$router.push({
+        path: `/recipe/${newRecipeId}`,
+        query: { is_DB: true }
+      });
     }
   }
 };

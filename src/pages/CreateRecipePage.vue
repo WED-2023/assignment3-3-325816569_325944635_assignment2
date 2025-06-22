@@ -1,184 +1,189 @@
 <template>
-  <div class="container py-4">
-    <div class="row justify-content-center">
-      <div class="col-md-10">
-        <div class="card shadow">
-          <div class="card-body p-4">
-            <h1 class="card-title text-center mb-4">Create New Recipe</h1>
+  <div v-if="visible" class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);" @click.self="closeModal">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-4">Create New Recipe</h1>
+          <button type="button" class="btn-close" @click="closeModal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="submitRecipe">
+            <!-- Basic Recipe Information -->
+            <div class="row mb-4">
+              <div class="col-md-12 mb-3">
+                <label for="title" class="form-label">Recipe Title</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="title" 
+                  v-model="recipe.title"
+                  placeholder="Enter recipe title" 
+                  required
+                >
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="readyInMinutes" class="form-label">Preparation Time (minutes)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="readyInMinutes" 
+                  v-model="recipe.readyInMinutes"
+                  placeholder="e.g. 30" 
+                  min="1" 
+                  required
+                >
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="servings" class="form-label">Servings</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="servings" 
+                  v-model="recipe.servings"
+                  placeholder="e.g. 4" 
+                  min="1" 
+                  required
+                >
+              </div>
+              
+              <div class="col-md-12 mb-3">
+                <label for="image" class="form-label">Image URL</label>
+                <input 
+                  type="url" 
+                  class="form-control" 
+                  id="image" 
+                  v-model="recipe.image"
+                  placeholder="Enter image URL" 
+                >
+                <div v-if="recipe.image" class="mt-2">
+                  <img :src="recipe.image" alt="Recipe preview" class="img-thumbnail" style="max-height: 150px">
+                </div>
+              </div>
+            </div>
             
-            <form @submit.prevent="submitRecipe">
-              <!-- Basic Recipe Information -->
-              <div class="row mb-4">
-                <div class="col-md-12 mb-3">
-                  <label for="title" class="form-label">Recipe Title*</label>
+            <!-- Dietary Restrictions -->
+            <div class="mb-4">
+              <h5>Dietary Information</h5>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="vegetarian" v-model="recipe.vegetarian">
+                <label class="form-check-label" for="vegetarian">Vegetarian</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="vegan" v-model="recipe.vegan">
+                <label class="form-check-label" for="vegan">Vegan</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="glutenFree" v-model="recipe.glutenFree">
+                <label class="form-check-label" for="glutenFree">Gluten-Free</label>
+              </div>
+            </div>
+            
+            <!-- Ingredients -->
+            <div class="mb-4">
+              <h5>Ingredients</h5>
+              <div 
+                v-for="(ingredient, index) in recipe.ingredients" 
+                :key="`ingredient-${index}`"
+                class="row g-2 mb-2"
+              >
+                <div class="col-md-6">
                   <input 
                     type="text" 
                     class="form-control" 
-                    id="title" 
-                    v-model="recipe.title"
-                    placeholder="Enter recipe title" 
+                    v-model="ingredient.name"
+                    placeholder="Ingredient name" 
                     required
                   >
                 </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="readyInMinutes" class="form-label">Preparation Time (minutes)*</label>
+                <div class="col-md-4">
                   <input 
-                    type="number" 
+                    type="text" 
                     class="form-control" 
-                    id="readyInMinutes" 
-                    v-model="recipe.readyInMinutes"
-                    placeholder="e.g. 30" 
-                    min="1" 
+                    v-model="ingredient.amount"
+                    placeholder="Amount (e.g. 2 cups)" 
                     required
                   >
                 </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="servings" class="form-label">Servings*</label>
-                  <input 
-                    type="number" 
+                <div class="col-md-2">
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-danger w-100" 
+                    @click="removeIngredient(index)"
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                class="btn btn-outline-success mt-2" 
+                @click="addIngredient"
+              >
+                <i class="fas fa-plus me-2"></i>Add Ingredient
+              </button>
+            </div>
+            
+            <!-- Steps -->
+            <div class="mb-4">
+              <h5>Preparation Steps</h5>
+              <div 
+                v-for="(step, index) in recipe.steps" 
+                :key="`step-${index}`"
+                class="row g-2 mb-2"
+              >
+                <div class="col-md-1 d-flex align-items-center">
+                  <span class="fw-bold">{{ index + 1 }}.</span>
+                </div>
+                <div class="col-md-9">
+                  <textarea 
                     class="form-control" 
-                    id="servings" 
-                    v-model="recipe.servings"
-                    placeholder="e.g. 4" 
-                    min="1" 
+                    v-model="recipe.steps[index]"
+                    placeholder="Describe this step" 
+                    rows="2"
                     required
+                  ></textarea>
+                </div>
+                <div class="col-md-2">
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-danger w-100 h-100" 
+                    @click="removeStep(index)"
                   >
-                </div>
-                
-                <div class="col-md-12 mb-3">
-                  <label for="image" class="form-label">Image URL</label>
-                  <input 
-                    type="url" 
-                    class="form-control" 
-                    id="image" 
-                    v-model="recipe.image"
-                    placeholder="Enter image URL" 
-                  >
-                  <div v-if="recipe.image" class="mt-2">
-                    <img :src="recipe.image" alt="Recipe preview" class="img-thumbnail" style="max-height: 150px">
-                  </div>
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
                 </div>
               </div>
-              
-              <!-- Dietary Restrictions -->
-              <div class="mb-4">
-                <h5>Dietary Information</h5>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" id="vegetarian" v-model="recipe.vegetarian">
-                  <label class="form-check-label" for="vegetarian">Vegetarian</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" id="vegan" v-model="recipe.vegan">
-                  <label class="form-check-label" for="vegan">Vegan</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" id="glutenFree" v-model="recipe.glutenFree">
-                  <label class="form-check-label" for="glutenFree">Gluten-Free</label>
-                </div>
-              </div>
-              
-              <!-- Ingredients -->
-              <div class="mb-4">
-                <h5>Ingredients*</h5>
-                <div 
-                  v-for="(ingredient, index) in recipe.ingredients" 
-                  :key="`ingredient-${index}`"
-                  class="row g-2 mb-2"
-                >
-                  <div class="col-md-6">
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      v-model="ingredient.name"
-                      placeholder="Ingredient name" 
-                      required
-                    >
-                  </div>
-                  <div class="col-md-4">
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      v-model="ingredient.amount"
-                      placeholder="Amount (e.g. 2 cups)" 
-                      required
-                    >
-                  </div>
-                  <div class="col-md-2">
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-danger w-100" 
-                      @click="removeIngredient(index)"
-                    >
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </div>
-                </div>
-                <button 
-                  type="button" 
-                  class="btn btn-outline-success mt-2" 
-                  @click="addIngredient"
-                >
-                  <i class="fas fa-plus me-2"></i>Add Ingredient
-                </button>
-              </div>
-              
-              <!-- Steps -->
-              <div class="mb-4">
-                <h5>Preparation Steps*</h5>
-                <div 
-                  v-for="(step, index) in recipe.steps" 
-                  :key="`step-${index}`"
-                  class="row g-2 mb-2"
-                >
-                  <div class="col-md-1 d-flex align-items-center">
-                    <span class="fw-bold">{{ index + 1 }}.</span>
-                  </div>
-                  <div class="col-md-9">
-                    <textarea 
-                      class="form-control" 
-                      v-model="recipe.steps[index]"
-                      placeholder="Describe this step" 
-                      rows="2"
-                      required
-                    ></textarea>
-                  </div>
-                  <div class="col-md-2">
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-danger w-100 h-100" 
-                      @click="removeStep(index)"
-                    >
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </div>
-                </div>
-                <button 
-                  type="button" 
-                  class="btn btn-outline-success mt-2" 
-                  @click="addStep"
-                >
-                  <i class="fas fa-plus me-2"></i>Add Step
-                </button>
-              </div>
-              
-              <!-- Form Actions -->
-              <div class="d-flex justify-content-between mt-5">
-                <button type="button" class="btn btn-secondary" @click="$router.go(-1)">
-                  <i class="fas fa-arrow-left me-2"></i>Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  class="btn btn-primary"
-                  :disabled="loading || !isFormValid"
-                >
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                  <i v-else class="fas fa-save me-2"></i>Save Recipe
-                </button>
-              </div>
-            </form>
-          </div>
+              <button 
+                type="button" 
+                class="btn btn-outline-success mt-2" 
+                @click="addStep"
+              >
+                <i class="fas fa-plus me-2"></i>Add Step
+              </button>
+            </div>
+            
+            <!-- Error message for validation -->
+            <div v-if="showValidationError" class="alert alert-danger">
+              Please fill out all required fields before saving the recipe.
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between mt-5">
+              <button type="button" class="btn btn-secondary" @click="closeModal">
+                <i class="fas fa-arrow-left me-2"></i>Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                :disabled="loading"
+              >
+                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                <i v-else class="fas fa-save me-2"></i>Save Recipe
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -186,21 +191,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, inject, watch } from 'vue';
 import axios from 'axios';
 
-const router = useRouter();
+const props = defineProps({
+  visible: { type: Boolean, default: false }
+});
+const emit = defineEmits(['update:visible', 'created']);
+
 const store = inject('store');
 const toast = inject('toast') || ((t, m, v) => console.log(t, m, v));
-
-// Check if user is logged in
-onMounted(() => {
-  if (!store.username) {
-    toast("Authentication Required", "Please log in to create recipes", "warning");
-    router.push('/login');
-  }
-});
 
 // Recipe model
 const recipe = ref({
@@ -217,11 +217,11 @@ const recipe = ref({
 
 const loading = ref(false);
 const error = ref(null);
+const showValidationError = ref(false);
 
-// Form validation
 const isFormValid = computed(() => {
   return (
-    recipe.value.title && 
+    recipe.value.title &&
     recipe.value.readyInMinutes > 0 &&
     recipe.value.servings > 0 &&
     recipe.value.ingredients.length > 0 &&
@@ -257,45 +257,92 @@ function removeStep(index) {
   }
 }
 
-// Submit the recipe
+// Modal close logic
+function closeModal() {
+  emit('update:visible', false);
+  showValidationError.value = false;
+}
+
+// Ensure correct payload for server
+function getSanitizedRecipe() {
+  // Remove empty ingredients/steps and ensure correct types
+  const ingredients = recipe.value.ingredients
+    .filter(ing => ing.name && ing.amount)
+    .map(ing => ({
+      name: String(ing.name).trim(),
+      amount: String(ing.amount).trim()
+    }));
+
+  // Steps as array of trimmed strings
+  const steps = recipe.value.steps
+    .map(s => typeof s === 'string' ? s.trim() : '')
+    .filter(s => s);
+
+  return {
+    title: String(recipe.value.title).trim(),
+    readyInMinutes: Number(recipe.value.readyInMinutes),
+    servings: Number(recipe.value.servings),
+    image: recipe.value.image ? String(recipe.value.image).trim() : '',
+    vegan: !!recipe.value.vegan,
+    vegetarian: !!recipe.value.vegetarian,
+    glutenFree: !!recipe.value.glutenFree,
+    ingredients,
+    steps
+  };
+}
+
 async function submitRecipe() {
+  showValidationError.value = false;
   if (!isFormValid.value) {
+    showValidationError.value = true;
     toast("Validation Error", "Please fill out all required fields", "danger");
     return;
   }
-  
+
   loading.value = true;
   error.value = null;
-  
+
   try {
+    const payload = getSanitizedRecipe();
     const response = await axios.post(
       `${store.server_domain}/recipes/create`,
-      recipe.value,
+      payload,
       { withCredentials: true }
     );
-    
-    console.log("Recipe creation response:", response.data);
-    
+
     toast("Success", "Your recipe has been created successfully!", "success");
-    
-    // Navigate to the newly created recipe
-    const newRecipeId = response.data.recipe_id;
-    router.push({
-      path: `/recipe/${newRecipeId}`,
-      query: { is_DB: true }
-    });
+    emit('created', response.data.recipe_id);
+    closeModal();
   } catch (err) {
-    console.error("Error creating recipe:", err);
     error.value = err.response?.data?.message || "Failed to create recipe";
     toast("Error", error.value, "danger");
   } finally {
     loading.value = false;
   }
 }
+
+watch(() => props.visible, (val) => {
+  if (val) {
+    recipe.value = {
+      title: '',
+      readyInMinutes: null,
+      servings: 4,
+      image: '',
+      vegan: false,
+      vegetarian: false,
+      glutenFree: false,
+      ingredients: [{ name: '', amount: '' }],
+      steps: ['']
+    };
+    error.value = null;
+    loading.value = false;
+    showValidationError.value = false;
+  }
+});
 </script>
 
 <style scoped>
-.card {
+.modal-content {
   border: none;
   border-radius: 12px;
 }

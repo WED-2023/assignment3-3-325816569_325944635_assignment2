@@ -28,9 +28,9 @@
             </router-link>
           </li>
           <li v-if="store.username" class="nav-item">
-            <router-link class="nav-link" to="/create-recipe">
+            <a class="nav-link" href="#" @click.prevent="showCreateModal = true">
               <i class="fas fa-plus-circle me-1"></i>Create Recipe
-            </router-link>
+            </a>
           </li>
         </ul>
 
@@ -86,19 +86,33 @@
         </ul>
       </div>
     </div>
+    <CreateRecipePage
+      v-model:visible="showCreateModal"
+      @created="onRecipeCreated"
+    />
   </nav>
 </template>
 
 <script setup>
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import CreateRecipePage from '../pages/CreateRecipePage.vue';
 
 const store = inject('store') || window.store;
 const router = useRouter();
+const showCreateModal = ref(false);
 
 function logout() {
   store.logout();
-  router.push('/'); // Redirect to main page after logout
+  router.push('/');
+}
+
+function onRecipeCreated(newRecipeId) {
+  showCreateModal.value = false;
+  router.push({
+    path: `/recipe/${newRecipeId}`,
+    query: { is_DB: true }
+  });
 }
 </script>
 
@@ -115,19 +129,45 @@ export default {
 }
 
 .navbar-brand {
-  color: white;
+  color: white !important;
   font-weight: bold;
   font-size: 1.4rem;
 }
 
-.nav-link {
-  color: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
+/* All navbar buttons and links: default white, black on hover */
+.nav-link,
+.btn,
+.btn-outline-light {
+  color: #fff !important;
+  background: none;
+  border: none;
+  transition: color 0.2s;
 }
 
-.nav-link:hover {
-  color: white;
+/* Keep navbar-brand white even when active or hovered */
+.navbar-brand.router-link-active,
+.navbar-brand.router-link-exact-active,
+.navbar-brand:visited,
+.navbar-brand:hover,
+.navbar-brand:focus {
+  color: #fff !important;
+}
+
+.nav-link:hover,
+.btn:hover,
+.btn-outline-light:hover,
+.router-link-active,
+.router-link-exact-active {
+  color: #000 !important;
+  background: none !important;
+}
+
+/* For .btn-outline-light, also set border on hover */
+.navbar .btn-outline-light:hover,
+.navbar .btn-outline-light:focus {
+  background-color: transparent !important;
+  color: #000 !important;
+  border-color: #000 !important;
 }
 
 .btn-outline-light {

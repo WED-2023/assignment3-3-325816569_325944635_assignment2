@@ -25,7 +25,10 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="form-label" for="country">Country</label>
-            <input v-model="country" type="text" class="form-control form-control-lg" id="country" placeholder="Country" required>
+            <select v-model="country" class="form-control form-control-lg" id="country" required>
+              <option value="" disabled>Select Country</option>
+              <option v-for="c in countries" :key="c" :value="c">{{ c }}</option>
+            </select>
           </div>
         </div>
         <div class="col-12">
@@ -63,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, inject, getCurrentInstance } from 'vue';
+import { ref, inject, getCurrentInstance, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import AuthCard from '../components/AuthCard.vue';
@@ -85,6 +88,20 @@ const loading = ref(false);
 const usernameError = ref('');
 const passwordError = ref('');
 const confirmPasswordError = ref('');
+
+const countries = ref([]);
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('https://restcountries.com/v3.1/all?fields=name');
+    countries.value = res.data
+      .map(c => c.name?.common)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+  } catch (e) {
+    countries.value = [];
+  }
+});
 
 function validateUsername() {
   if (!/^[A-Za-z]{3,8}$/.test(username.value)) {
