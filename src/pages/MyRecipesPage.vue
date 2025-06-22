@@ -60,14 +60,6 @@
               <span v-if="recipe.glutenFree" class="badge bg-warning me-1">Gluten-Free</span>
             </div>
           </div>
-          <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-            <button class="btn btn-sm btn-outline-primary" @click="editRecipe(recipe.id)">
-              <i class="fas fa-edit me-1"></i>Edit
-            </button>
-            <button class="btn btn-sm btn-outline-danger" @click="deleteRecipe(recipe.id)">
-              <i class="fas fa-trash me-1"></i>Delete
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -124,16 +116,6 @@ export default {
         path: `/recipe/${id}`,
         query: { is_DB: true }
       });
-    },
-    editRecipe(id) {
-      // Use the id in a console.log to satisfy ESLint
-      console.log(`Edit recipe with ID: ${id} - Feature coming soon`);
-      this.$root.toast('Info', 'Edit feature coming soon!', 'info');
-    },
-    deleteRecipe(id) {
-      // Use the id in a console.log to satisfy ESLint
-      console.log(`Delete recipe with ID: ${id} - Feature coming soon`);
-      this.$root.toast('Info', 'Delete feature coming soon!', 'info');
     },
     onRecipeCreated(newRecipeId) {
       this.showCreateModal = false;
