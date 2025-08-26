@@ -12,8 +12,16 @@
     <div v-else-if="error" class="alert alert-danger">
       {{ error }}
     </div>
-    <div v-else-if="recipes.length === 0" class="alert alert-info text-center">
-      {{ emptyMessage }}
+    <div v-else-if="recipes.length === 0" class="empty-state text-center py-5">
+      <i class="fas" :class="getEmptyIcon()" fa-3x mb-3 text-muted></i>
+      <h3>{{ getEmptyTitle() }}</h3>
+      <p class="text-muted mb-4">{{ emptyMessage }}</p>
+      <router-link v-if="source === 'favorites'" to="/" class="btn btn-primary">
+        Explore Recipes
+      </router-link>
+      <button v-else-if="source === 'my-recipes'" class="btn btn-primary" @click="$emit('create-recipe')">
+        Create Your First Recipe
+      </button>
     </div>
     <div v-else class="recipes-container">
       <RecipePreview
@@ -40,13 +48,14 @@ export default {
     },
     source: {
       type: String,
-      default: "random", // 'random', 'viewed', 'favorites', etc.
+      default: "random", // 'random', 'viewed', 'favorites', 'my-recipes'
     },
     emptyMessage: {
       type: String,
       default: "No recipes to display."
     }
   },
+  emits: ['create-recipe'],
   data() {
     return {
       recipes: [],
@@ -58,6 +67,22 @@ export default {
     this.updateRecipes();
   },
   methods: {
+    getEmptyIcon() {
+      switch (this.source) {
+        case 'favorites': return 'fa-heart';
+        case 'my-recipes': return 'fa-book';
+        case 'viewed': return 'fa-eye';
+        default: return 'fa-utensils';
+      }
+    },
+    getEmptyTitle() {
+      switch (this.source) {
+        case 'favorites': return 'No Favorite Recipes';
+        case 'my-recipes': return 'No Created Recipes';
+        case 'viewed': return 'No Viewed Recipes';
+        default: return 'No Recipes';
+      }
+    },
     async updateRecipes() {
       this.loading = true;
       this.error = null;
@@ -70,6 +95,9 @@ export default {
             break;
           case "favorites":
             endpoint = `${this.$root.store.server_domain}/users/favorites`;
+            break;
+          case "my-recipes":
+            endpoint = `${this.$root.store.server_domain}/users/my-recipes`;
             break;
           case "random":
           default:
@@ -115,13 +143,48 @@ export default {
 }
 
 .recipes-container {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
+  justify-items: center;
   margin: 0 auto;
+  max-width: 1200px;
 }
 
 .recipe-item {
-  flex: 0 0 calc(33.333% - 14px);
+  width: 100%;
+  max-width: 350px;
+}
+
+.empty-state {
+  background-color: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Responsive breakpoints */
+@media (min-width: 1200px) {
+  .recipes-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 991px) {
+  .recipes-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .recipes-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .recipe-item {
+    max-width: 100%;
+  }
 }
 </style>
